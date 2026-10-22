@@ -1,12 +1,8 @@
 # 作业五：MapReduce 求指数成分股集合关系
 
-用 MapReduce 比较 `A.txt` 和 `B.txt` 里三个指数的成分股：标出交集、只在 A、只在 B，再统计每个指数的交集、差集和并集数量。
-
-程序在 `lab1` 已经配好的 Docker Hadoop 3.2.1 集群上跑完。集群有 1 个 NameNode、2 个 DataNode、1 个 ResourceManager、2 个 NodeManager。YARN 上两个作业都是 SUCCEEDED。
+本次作业采用的方式是先根据任务把伪代码写出来，然后利用Grok4.7进行代码书写从而避免Java代码书写以及规范性问题，在写完之后逐行翻译代码之后进行了人工核验，最后在lab1已经配好的hadoop集群上跑完两个任务
 
 ## 设计思路
-
-输入每行是「指数编号 + 股票代码」，分隔符是制表符或空格。同一文件里如果出现重复的「指数 + 股票」，只算一次。
 
 任务 1：
 
@@ -45,9 +41,7 @@ def reduce(指数, 部分和列表):
     输出(指数, 交集, 只在A, 只在B, 并集)
 ```
 
-键用整数，输出按指数编号升序。
 
-列之间都是制表符。虚拟机内存大约 4GB，作业打开了 Uber 模式，Map 和 Reduce 跑在 AppMaster 里，避免再申请一堆容器把机器打满。
 
 ## 目录
 
@@ -67,11 +61,7 @@ def reduce(指数, 部分和列表):
 └── B.txt
 ```
 
-本机没有 Maven。`target/hw5.jar` 是在 namenode 容器的 JDK 8 上，用 `javac -encoding UTF-8` 对照 Hadoop 3.2.1 的 classpath 编译的。有 Maven 时也可以：
 
-```bash
-mvn -DskipTests package
-```
 
 ## 运行
 
@@ -88,24 +78,9 @@ hadoop jar target/hw5.jar edu.fin.hw5.Hw5Driver \
   /user/root/hw5/output_task2
 ```
 
-集群默认副本数是 3，但只有 2 个 DataNode，所以上传时把副本设成 2。
-
-页面：
-
-- NameNode：<http://localhost:9870>
-- YARN：<http://localhost:8088>
-
 ## 运行结果
 
-任务 1 共 547 行，已按指数、股票代码排序。题目里的例子都在结果中：
-
-```text
-101	JPM	BOTH
-101	UNH	BOTH
-101	V	BOTH
-101	AAPL	A_ONLY
-101	KO	B_ONLY
-```
+任务 1 共 547 行，这里因为太长不展示了，在output的task1里面可以看到具体情况
 
 任务 2：
 
@@ -115,13 +90,13 @@ hadoop jar target/hw5.jar edu.fin.hw5.Hw5Driver \
 103	52	195	255	502
 ```
 
-四列依次是交集、A 独有、B 独有、并集。101 和 102 与题目示例一致。103 的并集是 52 + 195 + 255 = 502。
+四列依次是交集、A 独有、B 独有、并集。
 
-`A.txt` 285 行、`B.txt` 320 行，文件内没有重复键。三个指数合计：交集 58，只在 A 227，只在 B 262。
+三个指数合计：交集 58，只在 A 227，只在 B 262。
 
 ## 页面截图
 
-YARN Finished 页面里，`hw5-task1-relation` 和 `hw5-task2-count` 都是 FINISHED / SUCCEEDED。同一张图里还有实验二的 7 个作业，也全部成功。
+YARN Finished 页面里，`hw5-task1-relation` 和 `hw5-task2-count` 都是 FINISHED / SUCCEEDED。
 
 ![YARN 上全部作业成功](screenshots/yarn-finished.png)
 
@@ -134,8 +109,6 @@ NameNode 处于 active，两个 DataNode 都在服务中。
 HDFS 上能看到输入目录和两个输出目录。
 
 ![作业五的 HDFS 目录](screenshots/hdfs-hw5.png)
-
-Overview 里有 26 个副本不足的块。这是集群默认副本数为 3、实际只有 2 个 DataNode 留下的旧块，不是这次作业失败。本次输出指定了副本数 2，作业本身已经成功。
 
 ## 不足和可以改进的地方
 
